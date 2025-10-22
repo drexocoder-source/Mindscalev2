@@ -5,17 +5,23 @@ from plugins.connections.logger import setup_logger
 from plugins.connections.db import init_db
 from plugins.utils.cleanup import clean_temp_job
 from datetime import timedelta
+import aioschedule
 
 from plugins.game.db import reset_daily_leaderboard  # your reset function
 
 logger = setup_logger("mind-scale-bot")
 
 async def start_scheduler():
-    import aioschedule
-    aioschedule.every().day.at("00:00").do(reset_daily_leaderboard)
+    """Runs scheduled background jobs."""
+    # Wrap sync function in async-safe thread
+    aioschedule.every().day.at("00:00").do(
+        lambda: asyncio.create_task(asyncio.to_thread(reset_daily_leaderboard))
+    )
+
     while True:
         await aioschedule.run_pending()
         await asyncio.sleep(30)
+
 
 if __name__ == "__main__":
     # Init DB
