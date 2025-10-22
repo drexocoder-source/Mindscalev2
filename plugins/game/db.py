@@ -363,13 +363,13 @@ def get_daily_leaderboard(limit: int = 100):
 def reset_daily_leaderboard():
     """Clear daily leaderboard — called at midnight."""
     ensure_daily_table()
-    conn = sqlite3.connect(DB_PATH, timeout=10)
-    c = conn.cursor()
     try:
+        conn = sqlite3.connect(DB_PATH, timeout=10)
+        c = conn.cursor()
         c.execute("DELETE FROM daily_stats")
         conn.commit()
         logger.info("🌙 Daily leaderboard reset completed.")
-    except Exception:
-        logger.exception("Failed to reset daily leaderboard")
+    except Exception as e:
+        logger.exception(f"Failed to reset daily leaderboard: {e}")
     finally:
         conn.close()
